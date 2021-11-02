@@ -12,6 +12,8 @@ import matplotlib.pyplot as plt
 
 import matplotlib as mat
 
+import os
+
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 from matplotlib.figure import Figure
@@ -26,6 +28,8 @@ class tkGUi :
     def __init__(self):
         
         self.root = Tk()
+
+        self.root.title("Data Import")
         
         menubar = Menu(self.root)
         self.root.geometry('1000x500')
@@ -100,9 +104,11 @@ class tkGUi :
         #self.text.insert(END, df3)
         data=open(filename,'rt',encoding="utf-8")
         
+        
         self.text.delete('1.0', END)
         
         self.text.insert(END,data.read())
+        self.text.configure(state='disabled')
         
     def Sort(self):
         
@@ -196,14 +202,15 @@ class tkGUi :
             temp.append(i)
         df3.index=temp
         
-        new = Tk()
-        text = scrolledtext.ScrolledText(new, width=1000, height=500,wraps = None)
-        
+        new = Toplevel()
+        new.title("Sorted Data")
+        text = scrolledtext.ScrolledText(new, width=600, height=500)
         text.pack()
         
         text.delete('1.0', END)
         
         text.insert(END, df3[['date', 'pm2.5', 'dis_pm2.5', 'pm10', 'dis_pm10', 'is_working']])
+        text.configure(state='disabled')
         
  
         
@@ -216,6 +223,8 @@ class tkGUi :
         print(filename)
 
     def Graph_PM2(self):
+        
+        path_dir = os.path.dirname(os.path.realpath(__file__))
         global df3
         list = []
         temp = df3.date[0][0:10]
@@ -239,169 +248,284 @@ class tkGUi :
         dis_pm2 = pd.to_numeric(dis_pm2)
 
         mat.rcParams['font.family'] = 'AppleMyungjo'
-
-
-
-        fig = plt.figure(figsize=(20,60))
-        fig.set_facecolor('white')
+        month = str(df3['date'][0][5:7])
+        day_minus = 0
         if str(df3['date'][len(df3)-1][8:10]) == '31' :
-            mat.rcParams['font.family'] = 'AppleMyungjo'
-            window = Tk()
-            # 1~7
-            ax = fig.add_subplot(4,1,1)
-            ax.set_title('3월 1주차', fontsize=20)
-            ax.plot(df3['date'][0:10080], pm2[0:10080] , label = '초미세먼지', color = 'r', linewidth=0.5)
-            ax.plot(df3['date'][0:10080], dis_pm2[0:10080],  label = '정화된 초미세먼지', color = 'b', linewidth=0.5)
-            ax.legend(loc=(0.86, 0.9), fontsize=12)
+            day_minus = 0
+        elif str(df3['date'][len(df3)-1][8:10]) == '30' :
+            day_minus = 1
+        elif str(df3['date'][len(df3)-1][8:10]) == '29' :
+            day_minus = 2
+        else :
+            day_minus = 3
+        mat.rcParams['font.family'] = 'AppleMyungjo'
+        # 1~7
+        plt.figure(figsize=(18, 8))
+        plt.title(month + '월 1주차', fontsize=20)
+        plt.plot(df3['date'][0:10080], pm2[0:10080] , label = '초미세먼지', color = 'r', linewidth=0.5)
+        plt.plot(df3['date'][0:10080], dis_pm2[0:10080],  label = '정화된 초미세먼지', color = 'b', linewidth=0.5)
+        plt.legend(loc=(0.85, 0.9), fontsize=12)
 
-            ax.set_ylabel('㎍/㎥', fontsize=14)
-            plt.ylim(0.0, 150.0)
+        plt.ylabel('㎍/㎥', fontsize=14)
+        plt.ylim(0.0, 150.0)
 
-            plt.xticks(list1[0:7],list[0:7])
-            plt.axhline(y=35, color='r', linewidth=1)
-            plt.text(10665, 35, '초미세먼지 나쁨 기준', fontsize = 12, color ='maroon')
+        plt.xticks(list1[0:7],list[0:7])
+        plt.axhline(y=35, color='r', linewidth=1)
+        plt.text(10665, 35, '초미세먼지 나쁨 기준', fontsize = 12, color ='maroon')
 
-            plt.grid()
+        plt.grid()
+        plt.savefig(path_dir+'/pm2/pm_2.5 1st.png', dpi=60)
+        plt.close()
 
-            plt.savefig('./pm_2.5 1st.png')
+        # 8~14
+        plt.figure(figsize=(18, 8))
+        plt.title(month + '월 2주차', fontsize=20)
+        plt.plot(df3['date'][10080:20160], pm2[10080:20160] , label = '초미세먼지', color = 'r', linewidth=0.5)
+        plt.plot(df3['date'][10080:20160], dis_pm2[10080:20160], label = '정화된 초미세먼지', color = 'b', linewidth=0.5)
+        plt.legend(loc=(0.85, 0.9), fontsize=12)
 
-            # 8~14
-            ax2 = fig.add_subplot(4,1,2)
-            ax2.set_title('3월 2주차', fontsize=20)
-            ax2.plot(df3['date'][10080:20160], pm2[10080:20160] , label = '초미세먼지', color = 'r', linewidth=0.5)
-            ax2.plot(df3['date'][10080:20160], dis_pm2[10080:20160], label = '정화된 초미세먼지', color = 'b', linewidth=0.5)
-            ax2.legend(loc=(0.86, 0.9), fontsize=12)
+        plt.ylabel('㎍/㎥', fontsize=14)
+        plt.ylim(0.0, 150.0)
 
-            ax2.set_ylabel('㎍/㎥', fontsize=14)
-            plt.ylim(0.0, 150.0)
+        plt.xticks(list1[0:7],list[7:14])
+        plt.axhline(y=35, color='r', linewidth=1)
+        plt.text(10665, 35, '초미세먼지 나쁨 기준', fontsize = 12, color ='maroon')
 
-            plt.xticks(list1[0:7],list[7:14])
-            plt.axhline(y=35, color='r', linewidth=1)
-            plt.text(10665, 35, '초미세먼지 나쁨 기준', fontsize = 12, color ='maroon')
+        plt.grid()
+        plt.savefig(path_dir+'/pm2/pm_2.5 2nd.png', dpi=60)
+        plt.close()
 
-            plt.grid()
+        # 15~21
+        plt.figure(figsize=(18, 8))
+        plt.title(month + '월 3주차', fontsize=20)
+        plt.plot(df3['date'][20160:30240], pm2[20160:30240] , label = '초미세먼지', color = 'r', linewidth=0.5)
+        plt.plot(df3['date'][20160:30240], dis_pm2[20160:30240],  label = '정화된 초미세먼지', color = 'b', linewidth=0.5)
+        plt.legend(loc=(0.85, 0.9), fontsize=12)
 
-            plt.savefig('./pm_2.5 2nd.png')
+        plt.ylabel('㎍/㎥', fontsize=14)
+        plt.ylim(0.0, 150.0)
 
-            # 15~21
-            ax3 = fig.add_subplot(4,1,3)
-            ax3.set_title('3월 3주차', fontsize=20)
-            ax3.plot(df3['date'][20160:30240], pm2[20160:30240] , label = '초미세먼지', color = 'r', linewidth=0.5)
-            ax3.plot(df3['date'][20160:30240], dis_pm2[20160:30240],  label = '정화된 초미세먼지', color = 'b', linewidth=0.5)
-            ax3.legend(loc=(0.86, 0.9), fontsize=12)
+        plt.xticks(list1[0:7],list[14:21])
+        plt.axhline(y=35, color='r', linewidth=1)
+        plt.text(10665, 35, '초미세먼지 나쁨 기준', fontsize = 12, color ='maroon')
 
-            ax3.set_ylabel('㎍/㎥', fontsize=14)
-            plt.ylim(0.0, 150.0)
+        plt.grid()
+        plt.savefig(path_dir+'/pm2/pm_2.5 3rd.png', dpi=60)
+        plt.close()
+        
 
-            plt.xticks(list1[0:7],list[14:21])
-            plt.axhline(y=35, color='r', linewidth=1)
-            plt.text(10665, 35, '초미세먼지 나쁨 기준', fontsize = 12, color ='maroon')
+        # 22~31
+        plt.figure(figsize=(18, 8))
+        plt.title(month + '월 4주차', fontsize=20)
+        plt.plot(df3['date'][30240:len(df3)], pm2[30240:len(df3)] , label = '초미세먼지', color = 'r', linewidth=0.5)
+        plt.plot(df3['date'][30240:len(df3)], dis_pm2[30240:len(df3)],  label = '정화된 초미세먼지', color = 'b', linewidth=0.5)
+        plt.legend(loc=(0.85, 0.9), fontsize=12)
 
-            plt.grid()
+        plt.ylabel('㎍/㎥', fontsize=14)
+        plt.ylim(0.0, 150.0)
 
-            plt.savefig('./pm_2.5 3rd.png')
+        plt.xticks(list1[0:10-day_minus],list[21:len(list)])
+        plt.axhline(y=35, color='r', linewidth=1)
+        plt.text(15275, 35, '초미세먼지 나쁨 기준', fontsize = 12, color ='maroon')
 
-            # 22~31
-            ax4 = fig.add_subplot(4,1,4)
-            ax4.set_title('3월 4주차', fontsize=20)
-            ax4.plot(df3['date'][30240:len(df3)], pm2[30240:len(df3)] , label = '초미세먼지', color = 'r', linewidth=0.5)
-            ax4.plot(df3['date'][30240:len(df3)], dis_pm2[30240:len(df3)],  label = '정화된 초미세먼지', color = 'b', linewidth=0.5)
-            ax4.legend(loc=(0.86, 0.9), fontsize=12)
+        plt.grid()
+        plt.savefig(path_dir+'/pm2/pm_2.5 4th.png', dpi=60)
+        plt.close()
 
-            ax4.set_ylabel('㎍/㎥', fontsize=14)
-            plt.ylim(0.0, 150.0)
-
-            plt.xticks(list1[0:10],list[21:len(list)])
-            plt.axhline(y=35, color='r', linewidth=1)
-            plt.text(15275, 35, '초미세먼지 나쁨 기준', fontsize = 12, color ='maroon')
-
-            plt.grid()
-            canvas = FigureCanvasTkAgg(fig, master=window)
-            canvas.get_tk_widget().pack()
-            window.mainloop()
-
-            plt.savefig('./pm_2.5 4th.png')
-            print('save complited')
+        file_list = os.listdir(path_dir+'/pm2')
+        real_file_list = [x for x in file_list if(x.endswith(".PNG") or (x.endswith(".png")==True))]
+        real_file_list.sort(key=lambda x: x[7:8])
+        print(real_file_list)
+        root=Toplevel()
+        root.title("Graph PM2.5")
+        root.geometry("1080x720")
+        root.resizable(0,0)
+        global xn
+        xn = 0
+        image=PhotoImage(file=os.path.realpath(path_dir+'/pm2/' + real_file_list[xn]))
+        xn = -1
+        def showimg_next():
+            global xn
+            global image
+            xn += 1
+            if(xn >= len(real_file_list)-1):
+                xn = len(real_file_list)-1
+            image=PhotoImage(file=os.path.realpath(path_dir+'/pm2/' + real_file_list[xn]))
+            label_2 = Label(root, image=image)
+            label_2.place(x=0,y=150)
+        
+        def showimg_previous():
+            global xn
+            global image
+            xn -= 1
+            if(xn <= 0):
+                xn=0
+            image=PhotoImage(file=os.path.realpath(path_dir+'/pm2/' + real_file_list[xn]))
+            label_2 = Label(root, image=image)
+            label_2.place(x=0,y=150)
+        
             
-        if str(df3['date'][len(df3)-1][8:10]) == '30' :
-            window = Tk()
-            mat.rcParams['font.family'] = 'AppleMyungjo'
-
-            # 1~7
-            ax = fig.add_subplot(4,1,1)
-            ax.set_title('3월 1주차', fontsize=20)
-            ax.plot(df3['date'][0:10080], pm2[0:10080] , label = '초미세먼지', color = 'r', linewidth=0.5)
-            ax.plot(df3['date'][0:10080], dis_pm2[0:10080],  label = '정화된 초미세먼지', color = 'b', linewidth=0.5)
-            ax.legend(loc=(0.86, 0.9), fontsize=12)
-
-            ax.set_ylabel('㎍/㎥', fontsize=14)
-            plt.ylim(0.0, 150.0)
-
-            plt.xticks(list1[0:7],list[0:7])
-            plt.axhline(y=35, color='r', linewidth=1)
-            plt.text(10665, 35, '초미세먼지 나쁨 기준', fontsize = 12, color ='maroon')
-
-            plt.grid()
-
-            # 8~14
-            ax2 = fig.add_subplot(4,1,2)
-            ax2.set_title('3월 2주차', fontsize=20)
-            ax2.plot(df3['date'][10080:20160], pm2[10080:20160] , label = '초미세먼지', color = 'r', linewidth=0.5)
-            ax2.plot(df3['date'][10080:20160], dis_pm2[10080:20160], label = '정화된 초미세먼지', color = 'b', linewidth=0.5)
-            ax2.legend(loc=(0.86, 0.9), fontsize=12)
-
-            ax2.set_ylabel('㎍/㎥', fontsize=14)
-            plt.ylim(0.0, 150.0)
-
-            plt.xticks(list1[0:7],list[7:14])
-            plt.axhline(y=35, color='r', linewidth=1)
-            plt.text(10665, 35, '초미세먼지 나쁨 기준', fontsize = 12, color ='maroon')
-
-            plt.grid()
-
-            # 15~21
-            ax3 = fig.add_subplot(4,1,3)
-            ax3.set_title('3월 3주차', fontsize=20)
-            ax3.plot(df3['date'][20160:30240], pm2[20160:30240] , label = '초미세먼지', color = 'r', linewidth=0.5)
-            ax3.plot(df3['date'][20160:30240], dis_pm2[20160:30240],  label = '정화된 초미세먼지', color = 'b', linewidth=0.5)
-            ax3.legend(loc=(0.86, 0.9), fontsize=12)
-
-            ax3.set_ylabel('㎍/㎥', fontsize=14)
-            plt.ylim(0.0, 150.0)
-
-            plt.xticks(list1[0:7],list[14:21])
-            plt.axhline(y=35, color='r', linewidth=1)
-            plt.text(10665, 35, '초미세먼지 나쁨 기준', fontsize = 12, color ='maroon')
-
-            plt.grid()
-
-            # 22~31
-            ax4 = fig.add_subplot(4,1,4)
-            ax4.set_title('3월 4주차', fontsize=20)
-            ax4.plot(df3['date'][30240:len(df3)], pm2[30240:len(df3)] , label = '초미세먼지', color = 'r', linewidth=0.5)
-            ax4.plot(df3['date'][30240:len(df3)], dis_pm2[30240:len(df3)],  label = '정화된 초미세먼지', color = 'b', linewidth=0.5)
-            ax4.legend(loc=(0.86, 0.9), fontsize=12)
-
-            ax4.set_ylabel('㎍/㎥', fontsize=14)
-            plt.ylim(0.0, 150.0)
-
-            plt.xticks(list1[0:19],list[21:len(list)])
-            plt.axhline(y=35, color='r', linewidth=1)
-            plt.text(15275, 35, '초미세먼지 나쁨 기준', fontsize = 12, color ='maroon')
-
-            plt.grid()
-            canvas = FigureCanvasTkAgg(fig, master=window)
-            canvas.get_tk_widget().pack()
-            window.mainloop()
+        
+        btn = Button(root,text="next",command=showimg_next,width=7,height=1) 
+        btn2 = Button(root,text="previous",command=showimg_previous,width=7,height=1) 
+        label_1 = Label(root,text=month + '월 초미세먼지',font="NanumGothic 20")
+        label_2 = Label(root, image=image)
+        label_1.place(x=475,y=10)
+        label_2.place(x=0,y=150)
+        btn.place(x=575,y=50)
+        btn2.place(x=425,y=50)
 
     def Graph_PM10(self):
+        path_dir = os.path.dirname(os.path.realpath(__file__))
+        global df3
+        list = []
+        temp = df3.date[0][0:10]
+        list.append(temp)
+        for i in range(1,len(df3)) :
+            if i % 1440 == 0 : list.append(df3['date'][i][0:10])
+            else : continue
+
+        list1 = []
+        list1.append(0)
+        for i in range(1,len(df3)) :
+            if i % 1440 == 0 : list1.append(i)
+            else : continue
+        
         dis_pm10 = []
         for i in range(0,len(df3)) :
-            if df3['pm10'][i] == df3['dis_pm10'][i] : dis_pm10.append(0)
+            if  df3['pm10'][i] == df3['dis_pm10'][i] : dis_pm10.append(0)
             else : dis_pm10.append(df3['dis_pm10'][i])
+
         pm10 = pd.to_numeric(df3['pm10'])
         dis_pm10 = pd.to_numeric(dis_pm10)
-        print("OK")    
+
+        mat.rcParams['font.family'] = 'AppleMyungjo'
+        month = str(df3['date'][0][5:7])
+        day_minus = 0
+        if str(df3['date'][len(df3)-1][8:10]) == '31' :
+            day_minus = 0
+        elif str(df3['date'][len(df3)-1][8:10]) == '30' :
+            day_minus = 1
+        elif str(df3['date'][len(df3)-1][8:10]) == '29' :
+            day_minus = 2
+        else :
+            day_minus = 3
+        mat.rcParams['font.family'] = 'AppleMyungjo'
+        # 1~7
+        plt.figure(figsize=(18, 8))
+        plt.title(month + '월 1주차', fontsize=20)
+        plt.plot(df3['date'][0:10080], pm10[0:10080] , label = '미세먼지', color = 'r', linewidth=0.5)
+        plt.plot(df3['date'][0:10080], dis_pm10[0:10080],  label = '정화된 미세먼지', color = 'b', linewidth=0.5)
+        plt.legend(loc=(0.86, 0.9), fontsize=12)
+
+        plt.ylabel('㎍/㎥', fontsize=14)
+        plt.ylim(0.0, 200.0)
+
+        plt.xticks(list1[0:7],list[0:7])
+        plt.axhline(y=80, color='r', linewidth=1)
+        plt.text(10665, 80, '미세먼지 나쁨 기준', fontsize = 12, color ='maroon')
+
+        plt.grid()
+        plt.savefig(path_dir+'/pm10/pm_10 1st.png', dpi=60)
+        plt.close()
+
+        # 8~14
+        plt.figure(figsize=(18, 8))
+        plt.title(month + '월 2주차', fontsize=20)
+        plt.plot(df3['date'][10080:20160], pm10[10080:20160] , label = '미세먼지', color = 'r', linewidth=0.5)
+        plt.plot(df3['date'][10080:20160], dis_pm10[10080:20160], label = '정화된 미세먼지', color = 'b', linewidth=0.5)
+        plt.legend(loc=(0.86, 0.9), fontsize=12)
+
+        plt.ylabel('㎍/㎥', fontsize=14)
+        plt.ylim(0.0, 200.0)
+
+        plt.xticks(list1[0:7],list[7:14])
+        plt.axhline(y=80, color='r', linewidth=1)
+        plt.text(10665, 80, '미세먼지 나쁨 기준', fontsize = 12, color ='maroon')
+
+        plt.grid()
+        plt.savefig(path_dir+'/pm10/pm_10 2nd.png', dpi=60)
+        plt.close()
+
+        # 15~21
+        plt.figure(figsize=(18, 8))
+        plt.title(month + '월 3주차', fontsize=20)
+        plt.plot(df3['date'][20160:30240], pm10[20160:30240] , label = '미세먼지', color = 'r', linewidth=0.5)
+        plt.plot(df3['date'][20160:30240], dis_pm10[20160:30240],  label = '정화된 미세먼지', color = 'b', linewidth=0.5)
+        plt.legend(loc=(0.86, 0.9), fontsize=12)
+
+        plt.ylabel('㎍/㎥', fontsize=14)
+        plt.ylim(0.0, 200.0)
+
+        plt.xticks(list1[0:7],list[14:21])
+        plt.axhline(y=80, color='r', linewidth=1)
+        plt.text(10665, 80, '미세먼지 나쁨 기준', fontsize = 12, color ='maroon')
+
+        plt.grid()
+        plt.savefig(path_dir+'/pm10/pm_10 3rd.png', dpi=60)
+        plt.close()
+        
+
+        # 22~31
+        plt.figure(figsize=(18, 8))
+        plt.title(month + '월 4주차', fontsize=20)
+        plt.plot(df3['date'][30240:len(df3)], pm10[30240:len(df3)] , label = '미세먼지', color = 'r', linewidth=0.5)
+        plt.plot(df3['date'][30240:len(df3)], dis_pm10[30240:len(df3)],  label = '정화된 미세먼지', color = 'b', linewidth=0.5)
+        plt.legend(loc=(0.86, 0.9), fontsize=12)
+
+        plt.ylabel('㎍/㎥', fontsize=14)
+        plt.ylim(0.0, 200.0)
+
+        plt.xticks(list1[0:10-day_minus],list[21:len(list)])
+        plt.axhline(y=80, color='r', linewidth=1)
+        plt.text(15275, 80, '미세먼지 나쁨 기준', fontsize = 12, color ='maroon')
+
+        plt.grid()
+        plt.savefig(path_dir+'/pm10/pm_10 4th.png', dpi=60)
+        plt.close()
+
+        file_list = os.listdir(path_dir+'/pm10')
+        real_file_list = [x for x in file_list if(x.endswith(".PNG") or (x.endswith(".png")==True))]
+        real_file_list.sort(key=lambda x: x[6:7])
+        print(real_file_list)
+        root=Toplevel()
+        root.title("Graph PM10")
+        root.geometry("1080x720")
+        root.resizable(0,0)
+        global xn
+        xn = 0
+        image=PhotoImage(file=os.path.realpath(path_dir+'/pm10/' + real_file_list[xn]))
+        xn = -1
+        def showimg_next():
+            global xn
+            global image
+            xn += 1
+            if(xn >= len(real_file_list)-1):
+                xn = len(real_file_list)-1
+            image=PhotoImage(file=os.path.realpath(path_dir+'/pm10/' + real_file_list[xn]))
+            label_2 = Label(root, image=image)
+            label_2.place(x=0,y=150)
+        
+        def showimg_previous():
+            global xn
+            global image
+            xn -= 1
+            if(xn <= 0):
+                xn=0
+            image=PhotoImage(file=os.path.realpath(path_dir+'/pm10/' + real_file_list[xn]))
+            label_2 = Label(root, image=image)
+            label_2.place(x=0,y=150)
+        
+            
+        
+        btn = Button(root,text="next",command=showimg_next,width=7,height=1) 
+        btn2 = Button(root,text="previous",command=showimg_previous,width=7,height=1) 
+        label_1 = Label(root,text=month + '월 미세먼지',font="NanumGothic 20")
+        label_2 = Label(root, image=image)
+        label_1.place(x=475,y=10)
+        label_2.place(x=0,y=150)
+        btn.place(x=575,y=50)
+        btn2.place(x=425,y=50)
 
     def domenu(self):
     
